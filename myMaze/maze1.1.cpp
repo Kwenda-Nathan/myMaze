@@ -8,10 +8,47 @@ enum GameState {
     GAME
 };
 
+const int screenWidth = 800;
+const int screenHeight = 600;
+int foodsize = 25;
+
+// food class
+class Food {
+public:
+    Vector2 position;
+    Texture2D texture;
+
+    // Food image
+    Food() 
+    {
+        Image image = LoadImage("pics/tile.png");
+        texture = LoadTextureFromImage(image);
+        UnloadImage(image);
+        position = GenerateRandomPos();
+    }
+
+    // Destructor 
+    ~Food() 
+    {
+        UnloadTexture(texture);
+    }
+
+    void Draw() {
+        DrawTexture(texture,position.x*foodsize,position.y*foodsize, WHITE);
+    }
+
+    // Generate random food position
+    Vector2 GenerateRandomPos() 
+    {
+        float x = GetRandomValue(0, foodsize - 1);
+        float y = GetRandomValue(0, foodsize - 1);
+        return Vector2{x,y};
+    }
+};
+
 int main() {
     // Initialize the window
-    const int screenWidth = 800;
-    const int screenHeight = 600;
+    
     InitWindow(screenWidth, screenHeight, "Menu and Game Screen");
 
     // Colors
@@ -25,6 +62,9 @@ int main() {
     // Game state
     GameState currentState = MENU;  // Start with the menu state
     bool gameRunning = true;        // Control the main loop
+
+    // Food object
+    Food food = Food();
 
     while (!WindowShouldClose() && gameRunning) {
         BeginDrawing();
@@ -65,6 +105,9 @@ int main() {
 
             // Draw circle
             DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 5, WHITE);
+
+            // Draw Food
+            food.Draw();
 
             //DrawFPS
             DrawFPS(10, 10);
