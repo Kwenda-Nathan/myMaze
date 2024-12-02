@@ -40,9 +40,16 @@ public:
     // Generate random food position
     Vector2 GenerateRandomPos() 
     {
-        float x = GetRandomValue(0, foodsize - 1);
-        float y = GetRandomValue(0, foodsize - 1);
-        return Vector2{x,y};
+        // Calculate the grid dimensions within the playable area
+        int gridx = (screenWidth - 100) / foodsize; // Exclude 50px border on left and right
+        int gridy = (screenHeight - 100) / foodsize; // Exclude 50px border on top and bottom
+
+        // Generate random positions within the grid
+        float x = GetRandomValue(0, gridx - 1);
+        float y = GetRandomValue(0, gridy - 1);
+
+        // offset the position to account for the border
+        return Vector2{x +2,y +2}; // offset by 2 grid cells (50px / foodsize)
     }
 };
 

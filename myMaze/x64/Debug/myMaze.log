@@ -1,10 +1,10 @@
 ﻿  maze1.1.cpp
 C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(37,59): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
 C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(37,39): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(43,17): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(44,17): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(82,65): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(82,45): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(87,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(87,43): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(48,17): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(49,17): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(89,65): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(89,45): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(94,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(94,43): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
   myMaze.vcxproj -> C:\Users\Mr23\Documents\GitHub\myMaze\x64\Debug\myMaze.exe
