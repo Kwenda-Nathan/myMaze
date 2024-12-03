@@ -12,6 +12,40 @@ const int screenWidth = 800;
 const int screenHeight = 600;
 int foodsize = 25;
 
+// player Character
+class Player 
+{
+public:
+    Texture2D image;
+    Vector2 position;
+
+    Player() {
+        image = LoadTexture("pics/player1.png");
+        position.x = 2;  // Starting position (aligned with the grid)
+        position.y = 2;
+    }
+    ~Player() {
+        UnloadTexture(image);
+    }
+    void Draw() {
+        DrawTextureV(image, Vector2{ position.x * foodsize, position.y * foodsize }, WHITE);
+    }
+    void MoveLeft() {
+        if (position.x > 2)position.x--;  // Prevent moving out of bounds
+    }
+    void MoveRight() {
+        if (position.x < (screenWidth - 100) / foodsize - 1) position.x++;
+    }
+    void MoveUp() {
+        if (position.y > 2)position.y--; // Prevent moving out of bounds
+    }
+    void MoveDown() {
+        if (position.y < (screenHeight - 100) / foodsize - 1) position.y++;
+    }
+
+
+};
+
 // food class
 class Food {
 public:
@@ -45,11 +79,11 @@ public:
         int gridy = (screenHeight - 100) / foodsize; // Exclude 50px border on top and bottom
 
         // Generate random positions within the grid
-        float x = GetRandomValue(0, gridx - 1);
-        float y = GetRandomValue(0, gridy - 1);
+        float x = GetRandomValue(2, gridx - 1);
+        float y = GetRandomValue(2, gridy - 1);
 
         // offset the position to account for the border
-        return Vector2{x +2,y +2}; // offset by 2 grid cells (50px / foodsize)
+        return Vector2{x ,y }; 
     }
 };
 
@@ -72,6 +106,9 @@ int main() {
 
     // Food object
     Food food = Food();
+
+    // Player object
+    Player player = Player();
 
     while (!WindowShouldClose() && gameRunning) {
         BeginDrawing();
@@ -110,11 +147,23 @@ int main() {
             // Draw the borders
             DrawRectangleLines(50, 50, screenWidth - 100, screenHeight - 100, borderColor);
 
-            // Draw circle
-            DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 5, WHITE);
+           // Handle player movement
+            if (IsKeyPressed(KEY_A)) player.MoveLeft();
+            if (IsKeyPressed(KEY_D)) player.MoveRight();
+            if (IsKeyPressed(KEY_W)) player.MoveUp();
+            if (IsKeyPressed(KEY_S)) player.MoveDown();
+
+            
+            // Collision detection between player and food
+            if (player.position.x == food.position.x && player.position.y == food.position.y) {
+                food.position = food.GenerateRandomPos(); // Respawn food
+            }
 
             // Draw Food
             food.Draw();
+
+            // Draw Player
+            player.Draw();
 
             //DrawFPS
             DrawFPS(10, 10);
