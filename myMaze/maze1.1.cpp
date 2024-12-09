@@ -1,5 +1,6 @@
 #include <iostream>
 #include <raylib.h>
+#include <vector>
 using namespace std;
 
 // Enum to manage game states
@@ -8,9 +9,9 @@ enum GameState {
     GAME
 };
 
-const int screenWidth = 800;
+const int screenWidth = 960;
 const int screenHeight = 600;
-int foodsize = 25;
+const int gridSize = 25;
 
 // player Character
 class Player 
@@ -21,26 +22,28 @@ public:
 
     Player() {
         image = LoadTexture("pics/player1.png");
-        position.x = 2;  // Starting position (aligned with the grid)
-        position.y = 2;
+        position = {1,1};  // Starting position (aligned with the grid)
+        
     }
     ~Player() {
         UnloadTexture(image);
     }
     void Draw() {
-        DrawTextureV(image, Vector2{ position.x * foodsize, position.y * foodsize }, WHITE);
+        DrawTextureV(image, Vector2{ position.x * gridSize, position.y * gridSize }, WHITE);
     }
-    void MoveLeft() {
-        if (position.x > 2)position.x--;  // Prevent moving out of bounds
-    }
-    void MoveRight() {
-        if (position.x < (screenWidth - 100) / foodsize - 1) position.x++;
-    }
-    void MoveUp() {
-        if (position.y > 2)position.y--; // Prevent moving out of bounds
-    }
-    void MoveDown() {
-        if (position.y < (screenHeight - 100) / foodsize - 1) position.y++;
+    void Move(Vector2 direction, const vector<Rectangle>& mazeWalls) {
+        // Predict the next position
+        Vector2 nextPosition = { position.x + direction.x, position.y + direction.y };
+        Rectangle playerRect = { nextPosition.x * gridSize, nextPosition.y * gridSize, gridSize, gridSize };
+
+        // Check for collisions with walls
+        for (const Rectangle& wall : mazeWalls) {
+            if (CheckCollisionRecs(playerRect, wall)) {
+                return; // Block movement if there's a collision
+            }
+        }
+        // Update position if no collision
+        position = nextPosition;
     }
 
 
@@ -68,19 +71,19 @@ public:
     }
 
     void Draw() {
-        DrawTexture(texture,position.x*foodsize,position.y*foodsize, WHITE);
+        DrawTextureV(texture, Vector2{ position.x * gridSize, position.y * gridSize }, WHITE);
     }
 
     // Generate random food position
     Vector2 GenerateRandomPos() 
     {
         // Calculate the grid dimensions within the playable area
-        int gridx = (screenWidth - 100) / foodsize; // Exclude 50px border on left and right
-        int gridy = (screenHeight - 100) / foodsize; // Exclude 50px border on top and bottom
+        int gridx = (screenWidth - 100) / gridSize; // Exclude 50px border on left and right
+        int gridy = (screenHeight - 100) / gridSize; // Exclude 50px border on top and bottom
 
         // Generate random positions within the grid
-        float x = GetRandomValue(2, gridx - 1);
-        float y = GetRandomValue(2, gridy - 1);
+        float x = GetRandomValue(1, gridx - 2);
+        float y = GetRandomValue(1, gridy - 2);
 
         // offset the position to account for the border
         return Vector2{x ,y }; 
@@ -103,6 +106,22 @@ int main() {
     // Game state
     GameState currentState = MENU;  // Start with the menu state
     bool gameRunning = true;        // Control the main loop
+
+    // Define Maze Walls
+    vector<Rectangle> mazeWalls = {
+        // Outer border
+        {0, 0, screenWidth, gridSize},                     // Top border
+        {0, screenHeight - gridSize, screenWidth, gridSize}, // Bottom border
+        {0, 0, gridSize, screenHeight},                   // Left border
+        {screenWidth - gridSize, 0, gridSize, screenHeight}, // Right border
+
+        // Inner maze walls (Example layout based on the image)
+        {gridSize * 2, gridSize, gridSize, gridSize * 3},  // Vertical wall
+        {gridSize * 4, gridSize, gridSize * 3, gridSize},  // Horizontal wall
+        {gridSize * 6, gridSize * 2, gridSize, gridSize * 3},
+        {gridSize * 3, gridSize * 4, gridSize * 2, gridSize},
+        // Add more walls based on the desired maze design...
+    };
 
     // Food object
     Food food = Food();
@@ -144,14 +163,20 @@ int main() {
             // Game Screen
             ClearBackground(BLACK);
 
+            // Draw Maze Walls
+            for (const Rectangle& wall : mazeWalls) {
+                DrawRectangleRec(wall, LIGHTGRAY);
+            }
+
             // Draw the borders
             DrawRectangleLines(50, 50, screenWidth - 100, screenHeight - 100, borderColor);
 
            // Handle player movement
-            if (IsKeyPressed(KEY_A)) player.MoveLeft();
-            if (IsKeyPressed(KEY_D)) player.MoveRight();
-            if (IsKeyPressed(KEY_W)) player.MoveUp();
-            if (IsKeyPressed(KEY_S)) player.MoveDown();
+            if (IsKeyPressed(KEY_A)) player.Move({ -1, 0 }, mazeWalls);
+            if (IsKeyPressed(KEY_D)) player.Move({ 1, 0 }, mazeWalls);
+            if (IsKeyPressed(KEY_W)) player.Move({ 0, -1 }, mazeWalls);
+            if (IsKeyPressed(KEY_S)) player.Move({ 0, 1 }, mazeWalls);
+
 
             
             // Collision detection between player and food
