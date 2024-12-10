@@ -1,6 +1,6 @@
 #include <iostream>
 #include <raylib.h>
-#include <vector>
+//#include <vector>
 using namespace std;
 
 // Enum to manage game states
@@ -31,19 +31,17 @@ public:
     void Draw() {
         DrawTextureV(image, Vector2{ position.x * gridSize, position.y * gridSize }, WHITE);
     }
-    void Move(Vector2 direction, const vector<Rectangle>& mazeWalls) {
-        // Predict the next position
-        Vector2 nextPosition = { position.x + direction.x, position.y + direction.y };
-        Rectangle playerRect = { nextPosition.x * gridSize, nextPosition.y * gridSize, gridSize, gridSize };
-
-        // Check for collisions with walls
-        for (const Rectangle& wall : mazeWalls) {
-            if (CheckCollisionRecs(playerRect, wall)) {
-                return; // Block movement if there's a collision
-            }
-        }
-        // Update position if no collision
-        position = nextPosition;
+    void  MoveLeft() {
+        if (position.x > 2) position.x--;  // Prevent moving out of bounds
+    }
+    void MoveRight() {
+        if (position.x < (screenWidth - 100) / gridSize - 1) position.x++;
+    }
+    void MoveUp() {
+        if (position.y > 2) position.y--; // Prevent moving out of bounds
+    }
+    void MoveDown() {
+        if (position.y < (screenHeight - 100) / gridSize - 1) position.y++;
     }
 
 
@@ -71,7 +69,7 @@ public:
     }
 
     void Draw() {
-        DrawTextureV(texture, Vector2{ position.x * gridSize, position.y * gridSize }, WHITE);
+        DrawTexture(texture, position.x * gridSize, position.y * gridSize, WHITE);
     }
 
     // Generate random food position
@@ -81,12 +79,12 @@ public:
         int gridx = (screenWidth - 100) / gridSize; // Exclude 50px border on left and right
         int gridy = (screenHeight - 100) / gridSize; // Exclude 50px border on top and bottom
 
-        // Generate random positions within the grid
-        float x = GetRandomValue(1, gridx - 2);
-        float y = GetRandomValue(1, gridy - 2);
-
-        // offset the position to account for the border
-        return Vector2{x ,y }; 
+        Vector2 newPos;
+        do {
+            newPos.x = GetRandomValue(2, gridx - 1);
+            newPos.y = GetRandomValue(2, gridy - 1);
+        } while (newPos.x == 2 && newPos.y == 2);  // Avoid spawning on player's initial position
+        return newPos;
     }
 };
 
@@ -107,21 +105,9 @@ int main() {
     GameState currentState = MENU;  // Start with the menu state
     bool gameRunning = true;        // Control the main loop
 
-    // Define Maze Walls
-    vector<Rectangle> mazeWalls = {
-        // Outer border
-        {0, 0, screenWidth, gridSize},                     // Top border
-        {0, screenHeight - gridSize, screenWidth, gridSize}, // Bottom border
-        {0, 0, gridSize, screenHeight},                   // Left border
-        {screenWidth - gridSize, 0, gridSize, screenHeight}, // Right border
-
-        // Inner maze walls (Example layout based on the image)
-        {gridSize * 2, gridSize, gridSize, gridSize * 3},  // Vertical wall
-        {gridSize * 4, gridSize, gridSize * 3, gridSize},  // Horizontal wall
-        {gridSize * 6, gridSize * 2, gridSize, gridSize * 3},
-        {gridSize * 3, gridSize * 4, gridSize * 2, gridSize},
-        // Add more walls based on the desired maze design...
-    };
+    // Score and timer
+    int score = 0;
+    float timer = 60.0f;  // 60 seconds countdown
 
     // Food object
     Food food = Food();
@@ -130,6 +116,16 @@ int main() {
     Player player = Player();
 
     while (!WindowShouldClose() && gameRunning) {
+
+        // Update game timer
+        if (currentState == GAME) {
+            timer -= GetFrameTime();
+            if (timer <= 0) {
+                timer = 0;
+                currentState = MENU;  // Game over, return to menu
+            }
+        }
+
         BeginDrawing();
         ClearBackground(bgColor);
 
@@ -153,6 +149,10 @@ int main() {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 if (mouseOverStart) {
                     currentState = GAME;  // Transition to the game screen
+                    timer = 60.0f;  // Reset timer
+                    score = 0;      // Reset score
+                    player.position = { 2, 2 };  // Reset player position
+                    food.position = food.GenerateRandomPos();
                 }
                 if (mouseOverQuit) {
                     gameRunning = false;  // Exit the game
@@ -163,25 +163,23 @@ int main() {
             // Game Screen
             ClearBackground(BLACK);
 
-            // Draw Maze Walls
-            for (const Rectangle& wall : mazeWalls) {
-                DrawRectangleRec(wall, LIGHTGRAY);
-            }
+            
 
             // Draw the borders
             DrawRectangleLines(50, 50, screenWidth - 100, screenHeight - 100, borderColor);
 
            // Handle player movement
-            if (IsKeyPressed(KEY_A)) player.Move({ -1, 0 }, mazeWalls);
-            if (IsKeyPressed(KEY_D)) player.Move({ 1, 0 }, mazeWalls);
-            if (IsKeyPressed(KEY_W)) player.Move({ 0, -1 }, mazeWalls);
-            if (IsKeyPressed(KEY_S)) player.Move({ 0, 1 }, mazeWalls);
+            if (IsKeyPressed(KEY_A)) player.MoveLeft();
+            if (IsKeyPressed(KEY_D)) player.MoveRight();
+            if (IsKeyPressed(KEY_W)) player.MoveUp();
+            if (IsKeyPressed(KEY_S)) player.MoveDown();
 
 
             
             // Collision detection between player and food
             if (player.position.x == food.position.x && player.position.y == food.position.y) {
                 food.position = food.GenerateRandomPos(); // Respawn food
+                score++;
             }
 
             // Draw Food
@@ -190,8 +188,9 @@ int main() {
             // Draw Player
             player.Draw();
 
-            //DrawFPS
-            DrawFPS(10, 10);
+            // Display Score and Timer
+            DrawText(TextFormat("Score: %d", score), 10, 10, 20, WHITE);
+            DrawText(TextFormat("Time Left: %.1f", timer), screenWidth - 150, 10, 20, WHITE);
 
             // Add a return option or game content
             DrawText("Press ESC to return to the menu", screenWidth / 2 - 200, screenHeight - 80, 20, WHITE);
