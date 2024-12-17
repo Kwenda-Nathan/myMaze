@@ -1,11 +1,14 @@
 ﻿  maze1.1.cpp
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(72,64): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(72,41): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(84,38): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(85,38): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(141,65): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(141,45): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(146,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(146,43): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(95,73): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(95,39): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(107,57): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(107,93): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(181,65): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(181,45): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(186,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(186,43): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(210,73): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(210,48): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(211,78): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(211,53): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
   myMaze.vcxproj -> C:\Users\Mr23\Documents\GitHub\myMaze\x64\Debug\myMaze.exe

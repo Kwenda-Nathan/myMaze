@@ -1,7 +1,13 @@
 #include <iostream>
 #include <raylib.h>
-//#include <vector>
+#include <vector>
 using namespace std;
+
+// Custom struct for integer-based 2D vector 
+struct Vector2i {
+    int x;
+    int y;
+};
 
 // Enum to manage game states
 enum GameState {
@@ -11,37 +17,54 @@ enum GameState {
 
 const int screenWidth = 960;
 const int screenHeight = 600;
-const int gridSize = 25;
+const int gridSize = 30;
+
+// Maze dimensions
+const int mazeWidth = 20;  // number of columns
+const int mazeHeight = 11; // number of rows
+
+// Maze grid: 1 = wall, 0 = path
+vector<vector<int>> maze = {
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
+    {1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+    {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1},
+    {1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1},
+    {1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
+    {1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+};
 
 // player Character
 class Player 
 {
 public:
     Texture2D image;
-    Vector2 position;
+    Vector2i position;
 
     Player() {
         image = LoadTexture("pics/player1.png");
-        position = {1,1};  // Starting position (aligned with the grid)
+        position = {2,2};  // Starting position (aligned with the grid)
         
     }
     ~Player() {
         UnloadTexture(image);
     }
-    void Draw() {
-        DrawTextureV(image, Vector2{ position.x * gridSize, position.y * gridSize }, WHITE);
+    void Draw(Vector2 offset) {
+        DrawTextureV(image, { offset.x + position.x * gridSize, offset.y + position.y * gridSize }, WHITE);
     }
-    void  MoveLeft() {
-        if (position.x > 2) position.x--;  // Prevent moving out of bounds
-    }
-    void MoveRight() {
-        if (position.x < (screenWidth - 100) / gridSize - 1) position.x++;
-    }
-    void MoveUp() {
-        if (position.y > 2) position.y--; // Prevent moving out of bounds
-    }
-    void MoveDown() {
-        if (position.y < (screenHeight - 100) / gridSize - 1) position.y++;
+    void Move(Vector2i direction, const vector<vector<int>>& maze) {
+        Vector2i nextPosition = { position.x + direction.x, position.y + direction.y };
+
+        // Check if the next position is a valid path (not a wall)
+        if (nextPosition.x >= 0 && nextPosition.x < maze[0].size() &&
+            nextPosition.y >= 0 && nextPosition.y < maze.size() &&
+            maze[nextPosition.y][nextPosition.x] == 0) {
+            position = nextPosition;
+        }
     }
 
 
@@ -50,7 +73,7 @@ public:
 // food class
 class Food {
 public:
-    Vector2 position;
+    Vector2i position;
     Texture2D texture;
 
     // Food image
@@ -68,22 +91,21 @@ public:
         UnloadTexture(texture);
     }
 
-    void Draw() {
-        DrawTexture(texture, position.x * gridSize, position.y * gridSize, WHITE);
+    void Draw(Vector2 offset) {
+        DrawTexture(texture, offset.x + position.x * gridSize, offset.y + position.y * gridSize, WHITE);
     }
 
     // Generate random food position
-    Vector2 GenerateRandomPos() 
+    Vector2i GenerateRandomPos() 
     {
-        // Calculate the grid dimensions within the playable area
+        /* Calculate the grid dimensions within the playable area
         int gridx = (screenWidth - 100) / gridSize; // Exclude 50px border on left and right
-        int gridy = (screenHeight - 100) / gridSize; // Exclude 50px border on top and bottom
+        int gridy = (screenHeight - 100) / gridSize;  Exclude 50px border on top and bottom*/
 
-        Vector2 newPos;
+        Vector2i newPos;
         do {
-            newPos.x = GetRandomValue(2, gridx - 1);
-            newPos.y = GetRandomValue(2, gridy - 1);
-        } while (newPos.x == 2 && newPos.y == 2);  // Avoid spawning on player's initial position
+            newPos = { GetRandomValue(0, maze[0].size() - 1), GetRandomValue(0, maze.size() - 1) };
+        } while (maze[newPos.y][newPos.x] != 0);  // Ensure food spawns on a path
         return newPos;
     }
 };
@@ -93,13 +115,24 @@ int main() {
     
     InitWindow(screenWidth, screenHeight, "Menu and Game Screen");
 
+    if (maze.empty() || maze[0].empty()) {
+        cerr << "Error: Maze is empty or improperly initialized!" << endl;
+        CloseWindow();
+        return -1;
+    }
+
+    cout << "Maze dimensions: " << maze.size() << " x " << maze[0].size() << endl;
+
     // Colors
     Color bgColor = DARKGRAY;
     Color borderColor = WHITE;
 
-    // Button properties
-    Rectangle startButton = { screenWidth / 2 - 100, screenHeight / 2 - 60, 200, 50 };
-    Rectangle quitButton = { screenWidth / 2 - 100, screenHeight / 2 + 20, 200, 50 };
+    Vector2 offset = {
+        (screenWidth - maze[0].size() * gridSize) / 2.0f,
+        (screenHeight - maze.size() * gridSize) / 2.0f
+    };
+
+    
 
     // Game state
     GameState currentState = MENU;  // Start with the menu state
@@ -117,6 +150,9 @@ int main() {
 
     while (!WindowShouldClose() && gameRunning) {
 
+        cout << "Player Position: (" << player.position.x << ", " << player.position.y << ")\n";
+        cout << "Food Position: (" << food.position.x << ", " << food.position.y << ")\n";
+
         // Update game timer
         if (currentState == GAME) {
             timer -= GetFrameTime();
@@ -133,6 +169,10 @@ int main() {
         if (currentState == MENU) {
             // Menu Screen
             DrawText("GAME MENU", screenWidth / 2 - MeasureText("GAME MENU", 40) / 2, 100, 40, WHITE);
+
+            // Button properties
+            Rectangle startButton = { screenWidth / 2 - 100, screenHeight / 2 - 60, 200, 50 };
+            Rectangle quitButton = { screenWidth / 2 - 100, screenHeight / 2 + 20, 200, 50 };
 
             // Draw Start Button
             Vector2 mousePosition = GetMousePosition();
@@ -163,16 +203,24 @@ int main() {
             // Game Screen
             ClearBackground(BLACK);
 
-            
+            // Draw maze
+            for (int y = 0; y < maze.size(); y++) {
+                for (int x = 0; x < maze[0].size(); x++) {
+                    if (maze[y][x] == 1) {
+                        DrawRectangle(offset.x + x * gridSize, offset.y + y * gridSize, gridSize, gridSize, BLACK);
+                        DrawRectangleLines(offset.x + x * gridSize, offset.y + y * gridSize, gridSize, gridSize, WHITE);
+                    }
+                }
+            }
 
             // Draw the borders
-            DrawRectangleLines(50, 50, screenWidth - 100, screenHeight - 100, borderColor);
+            //DrawRectangleLines(50, 50, screenWidth - 100, screenHeight - 100, borderColor);
 
            // Handle player movement
-            if (IsKeyPressed(KEY_A)) player.MoveLeft();
-            if (IsKeyPressed(KEY_D)) player.MoveRight();
-            if (IsKeyPressed(KEY_W)) player.MoveUp();
-            if (IsKeyPressed(KEY_S)) player.MoveDown();
+            if (IsKeyPressed(KEY_UP)) player.Move({ 0, -1 }, maze);
+            if (IsKeyPressed(KEY_DOWN)) player.Move({ 0, 1 }, maze);
+            if (IsKeyPressed(KEY_LEFT)) player.Move({ -1, 0 }, maze);
+            if (IsKeyPressed(KEY_RIGHT)) player.Move({ 1, 0 }, maze);
 
 
             
@@ -183,10 +231,10 @@ int main() {
             }
 
             // Draw Food
-            food.Draw();
+            food.Draw(offset);
 
             // Draw Player
-            player.Draw();
+            player.Draw(offset);
 
             // Display Score and Timer
             DrawText(TextFormat("Score: %d", score), 10, 10, 20, WHITE);
