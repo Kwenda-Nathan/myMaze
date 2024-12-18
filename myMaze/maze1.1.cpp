@@ -28,12 +28,12 @@ vector<vector<int>> maze = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
     {1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
-    {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1},
-    {1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1},
+    {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1},
+    {1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1},
     {1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
-    {1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1},
+    {1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
@@ -157,8 +157,7 @@ int main() {
         if (currentState == GAME) {
             timer -= GetFrameTime();
             if (timer <= 0) {
-                timer = 0;
-                currentState = MENU;  // Game over, return to menu
+                timer = 0;               
             }
         }
 
@@ -170,20 +169,20 @@ int main() {
             // Menu Screen
             DrawText("GAME MENU", screenWidth / 2 - MeasureText("GAME MENU", 40) / 2, 100, 40, WHITE);
 
-            // Button properties
-            Rectangle startButton = { screenWidth / 2 - 100, screenHeight / 2 - 60, 200, 50 };
-            Rectangle quitButton = { screenWidth / 2 - 100, screenHeight / 2 + 20, 200, 50 };
-
             // Draw Start Button
+            Rectangle startButton = { screenWidth / 2 - 100, screenHeight / 2 - 60, 200, 50 };
             Vector2 mousePosition = GetMousePosition();
             bool mouseOverStart = CheckCollisionPointRec(mousePosition, startButton);
             DrawRectangleRec(startButton, mouseOverStart ? LIGHTGRAY : GRAY);
             DrawText("START", startButton.x + 50, startButton.y + 10, 30, BLACK);
 
             // Draw Quit Button
+            Rectangle quitButton = { screenWidth / 2 - 100, screenHeight / 2 + 20, 200, 50 };
             bool mouseOverQuit = CheckCollisionPointRec(mousePosition, quitButton);
             DrawRectangleRec(quitButton, mouseOverQuit ? LIGHTGRAY : GRAY);
             DrawText("QUIT", quitButton.x + 60, quitButton.y + 10, 30, BLACK);
+
+
 
             // Handle button clicks
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -213,7 +212,8 @@ int main() {
                 }
             }
 
-            // Draw the borders
+
+            
             //DrawRectangleLines(50, 50, screenWidth - 100, screenHeight - 100, borderColor);
 
            // Handle player movement
@@ -230,21 +230,46 @@ int main() {
                 score++;
             }
 
-            // Draw Food
+            // Draw Food & player
             food.Draw(offset);
-
-            // Draw Player
             player.Draw(offset);
 
             // Display Score and Timer
             DrawText(TextFormat("Score: %d", score), 10, 10, 20, WHITE);
             DrawText(TextFormat("Time Left: %.1f", timer), screenWidth - 150, 10, 20, WHITE);
 
-            // Add a return option or game content
-            DrawText("Press ESC to return to the menu", screenWidth / 2 - 200, screenHeight - 80, 20, WHITE);
+            // Show "GAME OVER" text if the timer reaches 0
+            if (timer <= 0) {
+                DrawText("GAME OVER!", screenWidth / 2 - MeasureText("GAME OVER!", 40) / 2, screenHeight / 2 - 100, 40, RED);
 
-            // Return to menu if ESC is pressed
-            if (IsKeyPressed(KEY_ESCAPE)) {
+                // Display M to return to the menu text
+                DrawText("Press M to return to the menu",
+                    screenWidth / 2 - MeasureText("Press M to return to the menu", 20) / 2,
+                    screenHeight / 2,
+                    20, WHITE);
+
+                // Replay Button
+                Rectangle replayButton = { screenWidth / 2 - 100, screenHeight / 2 + 50, 200, 50 };
+                Vector2 mousePosition = GetMousePosition();
+                bool mouseOverReplay = CheckCollisionPointRec(mousePosition, replayButton);
+                DrawRectangleRec(replayButton, mouseOverReplay ? LIGHTGRAY : GRAY);
+                DrawText("REPLAY", replayButton.x + 50, replayButton.y + 10, 30, BLACK);
+                
+                // Handle Replay button click
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouseOverReplay) {
+                    // Reset game state
+                    timer = 60.0f;        // Reset timer
+                    score = 0;            // Reset score
+                    player.position = { 2, 2 };  // Reset player position
+                    food.position = food.GenerateRandomPos(); // Reset food position
+                }
+            }
+
+            // Add a return option or game content
+            DrawText("Press M to return to the menu", screenWidth / 2 - 200, screenHeight - 80, 20, WHITE);
+
+            // Return to menu if M is pressed
+            if (IsKeyPressed(KEY_M)) {
                 currentState = MENU;
             }
         }
