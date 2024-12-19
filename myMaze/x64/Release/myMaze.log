@@ -1,0 +1,22 @@
+﻿  maze1.1.cpp
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(95,73): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(95,39): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(107,57): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(107,93): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(177,65): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(177,45): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(183,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(183,43): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(209,73): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(209,48): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(210,78): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(210,53): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(256,72): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(256,51): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 152 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  myMaze.vcxproj -> C:\Users\Mr23\Documents\GitHub\myMaze\x64\Release\myMaze.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.

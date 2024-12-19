@@ -27,7 +27,7 @@ const int mazeHeight = 11; // number of rows
 vector<vector<int>> maze = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
-    {1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+    {1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
     {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1},
     {1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1},
@@ -141,12 +141,13 @@ int main() {
     // Score and timer
     int score = 0;
     float timer = 60.0f;  // 60 seconds countdown
+    bool isPaused = false;
 
-    // Food object
+    // Food & Player object
     Food food = Food();
-
-    // Player object
     Player player = Player();
+    
+    
 
     while (!WindowShouldClose() && gameRunning) {
 
@@ -154,7 +155,7 @@ int main() {
         cout << "Food Position: (" << food.position.x << ", " << food.position.y << ")\n";
 
         // Update game timer
-        if (currentState == GAME) {
+        if (currentState == GAME && !isPaused && timer > 0) {
             timer -= GetFrameTime();
             if (timer <= 0) {
                 timer = 0;               
@@ -199,8 +200,27 @@ int main() {
             }
         }
         else if (currentState == GAME) {
+            
             // Game Screen
             ClearBackground(BLACK);
+            
+                if (currentState == GAME && !isPaused && timer > 0) {
+                    timer -= GetFrameTime();
+                    // Handle player movement
+                    if (IsKeyPressed(KEY_UP)) player.Move({ 0, -1 }, maze);
+                    if (IsKeyPressed(KEY_DOWN)) player.Move({ 0, 1 }, maze);
+                    if (IsKeyPressed(KEY_LEFT)) player.Move({ -1, 0 }, maze);
+                    if (IsKeyPressed(KEY_RIGHT)) player.Move({ 1, 0 }, maze);
+
+
+
+                    // Collision detection between player and food
+                    if (player.position.x == food.position.x && player.position.y == food.position.y) {
+                        food.position = food.GenerateRandomPos(); // Respawn food
+                        score++;
+                    }
+                }
+            
 
             // Draw maze
             for (int y = 0; y < maze.size(); y++) {
@@ -211,32 +231,37 @@ int main() {
                     }
                 }
             }
-
-
-            
+           
             //DrawRectangleLines(50, 50, screenWidth - 100, screenHeight - 100, borderColor);
-
-           // Handle player movement
-            if (IsKeyPressed(KEY_UP)) player.Move({ 0, -1 }, maze);
-            if (IsKeyPressed(KEY_DOWN)) player.Move({ 0, 1 }, maze);
-            if (IsKeyPressed(KEY_LEFT)) player.Move({ -1, 0 }, maze);
-            if (IsKeyPressed(KEY_RIGHT)) player.Move({ 1, 0 }, maze);
-
-
             
-            // Collision detection between player and food
-            if (player.position.x == food.position.x && player.position.y == food.position.y) {
-                food.position = food.GenerateRandomPos(); // Respawn food
-                score++;
-            }
-
             // Draw Food & player
-            food.Draw(offset);
-            player.Draw(offset);
+            if (timer > 0) {
+                food.Draw(offset);
+                player.Draw(offset);
+            }
 
             // Display Score and Timer
             DrawText(TextFormat("Score: %d", score), 10, 10, 20, WHITE);
             DrawText(TextFormat("Time Left: %.1f", timer), screenWidth - 150, 10, 20, WHITE);
+
+            // Draw a Pause-Btn
+            Rectangle pauseButton = { screenWidth - 150, 50, 120, 40 };
+            Vector2 mousePosition = GetMousePosition();
+            bool mouseOverPause = CheckCollisionPointRec(mousePosition, pauseButton);
+
+            DrawRectangleRec(pauseButton, mouseOverPause ? LIGHTGRAY : GRAY);
+            DrawText(isPaused ? "PLAY" : "PAUSE", pauseButton.x + 25, pauseButton.y + 10, 20, BLACK);
+
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouseOverPause) {
+                isPaused = !isPaused;
+            }
+
+            // Pause effects
+            if (isPaused) {
+                DrawRectangle(0, 0, screenWidth, screenHeight, Fade(BLACK, 0.5f));
+                DrawText("Paused", screenWidth / 2 - MeasureText("Paused", 40) / 2, screenHeight / 2 - 20, 40, WHITE);
+            }
+
 
             // Show "GAME OVER" text if the timer reaches 0
             if (timer <= 0) {
