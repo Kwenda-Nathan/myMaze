@@ -1,6 +1,9 @@
 #include <iostream>
 #include <raylib.h>
 #include <vector>
+#include <stack>
+#include <cstdlib>
+#include <ctime>
 using namespace std;
 
 // Custom struct for integer-based 2D vector 
@@ -23,20 +26,57 @@ const int gridSize = 30;
 const int mazeWidth = 20;  // number of columns
 const int mazeHeight = 11; // number of rows
 
-// Maze grid: 1 = wall, 0 = path
-vector<vector<int>> maze = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
-    {1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
-    {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1},
-    {1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1},
-    {1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
-    {1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+// Directions for maze generation
+const vector<Vector2i> directions = {
+    {0, -1}, // Up
+    {1, 0},  // Right
+    {0, 1},  // Down
+    {-1, 0}  // Left
 };
+
+// Function to shuffle directions randomly
+void ShuffleDirections(vector<Vector2i>& dirs) {
+    for (int i = dirs.size() - 1; i > 0; --i) {
+        int j = rand() % (i + 1);
+        swap(dirs[i], dirs[j]);
+    }
+}
+
+// Function to generate a random maze
+vector<vector<int>> GenerateMaze() {
+    vector<vector<int>> maze(mazeHeight, vector<int>(mazeWidth, 1)); // Initialize with walls
+    stack<Vector2i> cellStack;
+    Vector2i current = { 1, 1 };
+    maze[current.y][current.x] = 0;
+
+    while (!cellStack.empty() || current.x > 0 || current.y > 0) {
+        vector<Vector2i> shuffledDirs = directions;
+        ShuffleDirections(shuffledDirs);
+        bool moved = false;
+
+        for (const auto& dir : shuffledDirs) {
+            Vector2i next = { current.x + dir.x * 2, current.y + dir.y * 2 };
+            if (next.x > 0 && next.x < mazeWidth - 1 &&
+                next.y > 0 && next.y < mazeHeight - 1 &&
+                maze[next.y][next.x] == 1) {
+                maze[current.y + dir.y][current.x + dir.x] = 0; // Remove wall
+                maze[next.y][next.x] = 0; // Mark cell as visited
+                cellStack.push(current);
+                current = next;
+                moved = true;
+                break;
+            }
+        }
+
+        if (!moved) {
+            if (cellStack.empty()) break;
+            current = cellStack.top();
+            cellStack.pop();
+        }
+    }
+
+    return maze;
+}
 
 // player Character
 class Player 
@@ -47,7 +87,7 @@ public:
 
     Player() {
         image = LoadTexture("pics/player1.png");
-        position = {2,2};  // Starting position (aligned with the grid)
+        position = {1,1};  // Starting position (aligned with the grid)
         
     }
     ~Player() {
@@ -77,12 +117,12 @@ public:
     Texture2D texture;
 
     // Food image
-    Food() 
+    Food(const vector<vector<int>>& maze)
     {
         Image image = LoadImage("pics/tile.png");
         texture = LoadTextureFromImage(image);
         UnloadImage(image);
-        position = GenerateRandomPos();
+        position = GenerateRandomPos(maze);
     }
 
     // Destructor 
@@ -96,40 +136,29 @@ public:
     }
 
     // Generate random food position
-    Vector2i GenerateRandomPos() 
+    Vector2i GenerateRandomPos(const vector<vector<int>>& maze)
     {
-        /* Calculate the grid dimensions within the playable area
-        int gridx = (screenWidth - 100) / gridSize; // Exclude 50px border on left and right
-        int gridy = (screenHeight - 100) / gridSize;  Exclude 50px border on top and bottom*/
-
         Vector2i newPos;
         do {
+            // Generate a random position within the maze's boundaries
             newPos = { GetRandomValue(0, maze[0].size() - 1), GetRandomValue(0, maze.size() - 1) };
-        } while (maze[newPos.y][newPos.x] != 0);  // Ensure food spawns on a path
+        } while (maze[newPos.y][newPos.x] != 0);  // Ensure food spawns on a valid path
         return newPos;
     }
 };
 
 int main() {
     // Initialize the window
-    
+    srand(time(nullptr));
     InitWindow(screenWidth, screenHeight, "Menu and Game Screen");
 
-    if (maze.empty() || maze[0].empty()) {
-        cerr << "Error: Maze is empty or improperly initialized!" << endl;
-        CloseWindow();
-        return -1;
-    }
-
-    cout << "Maze dimensions: " << maze.size() << " x " << maze[0].size() << endl;
-
-    // Colors
+   // Colors
     Color bgColor = DARKGRAY;
     Color borderColor = WHITE;
 
     Vector2 offset = {
-        (screenWidth - maze[0].size() * gridSize) / 2.0f,
-        (screenHeight - maze.size() * gridSize) / 2.0f
+        (screenWidth - mazeWidth * gridSize) / 2.0f,
+        (screenHeight - mazeHeight * gridSize) / 2.0f
     };
 
     
@@ -137,15 +166,17 @@ int main() {
     // Game state
     GameState currentState = MENU;  // Start with the menu state
     bool gameRunning = true;        // Control the main loop
+    bool isPaused = false;
 
     // Score and timer
     int score = 0;
     float timer = 60.0f;  // 60 seconds countdown
-    bool isPaused = false;
-
+    
     // Food & Player object
-    Food food = Food();
-    Player player = Player();
+    vector<vector<int>> maze = GenerateMaze();
+    Food food(maze);
+    Player player;
+    //food.Spawn(maze);
     
     
 
@@ -191,8 +222,10 @@ int main() {
                     currentState = GAME;  // Transition to the game screen
                     timer = 60.0f;  // Reset timer
                     score = 0;      // Reset score
-                    player.position = { 2, 2 };  // Reset player position
-                    food.position = food.GenerateRandomPos();
+                    player.position = { 1, 1 };  // Reset player position
+                    maze = GenerateMaze();
+                    food.position = food.GenerateRandomPos(maze);
+                    
                 }
                 if (mouseOverQuit) {
                     gameRunning = false;  // Exit the game
@@ -204,7 +237,7 @@ int main() {
             // Game Screen
             ClearBackground(BLACK);
             
-                if (currentState == GAME && !isPaused && timer > 0) {
+                if ( !isPaused && timer > 0) {
                     timer -= GetFrameTime();
                     // Handle player movement
                     if (IsKeyPressed(KEY_UP)) player.Move({ 0, -1 }, maze);
@@ -216,7 +249,7 @@ int main() {
 
                     // Collision detection between player and food
                     if (player.position.x == food.position.x && player.position.y == food.position.y) {
-                        food.position = food.GenerateRandomPos(); // Respawn food
+                        food.position = food.GenerateRandomPos(maze); // Respawn food
                         score++;
                     }
                 }
@@ -285,8 +318,8 @@ int main() {
                     // Reset game state
                     timer = 60.0f;        // Reset timer
                     score = 0;            // Reset score
-                    player.position = { 2, 2 };  // Reset player position
-                    food.position = food.GenerateRandomPos(); // Reset food position
+                    player.position = { 1, 1 };  // Reset player position
+                    food.position = food.GenerateRandomPos(maze); // Reset food position
                 }
             }
 
