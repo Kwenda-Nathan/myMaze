@@ -85,14 +85,12 @@ public:
     Texture2D image;
     Vector2i position;
 
-    Player() {
-        image = LoadTexture("pics/player1.png");
+    Player(Texture2D& texture) {
+        image = texture;
         position = {1,1};  // Starting position (aligned with the grid)
         
     }
-    ~Player() {
-        UnloadTexture(image);
-    }
+    
     void Draw(Vector2 offset) {
         DrawTextureV(image, { offset.x + position.x * gridSize, offset.y + position.y * gridSize }, WHITE);
     }
@@ -110,6 +108,36 @@ public:
 
 };
 
+// Enemy class
+class Enemy {
+public:
+    Texture2D image;
+    Vector2i position;
+    vector<Vector2i> patrolPath;
+    int patrolIndex = 0;
+    float moveTimer = 0.0f; // Timer for movement
+    float moveDelay = 0.5f; // Delay between movements in seconds
+
+    Enemy(Texture2D& texture, const vector<Vector2i>& path) {
+        image = texture;
+        patrolPath = path;
+        position = patrolPath[0];
+    }
+
+    void Draw(Vector2 offset) const {
+        DrawTextureV(image, { offset.x + position.x * gridSize, offset.y + position.y * gridSize }, WHITE);
+    }
+
+    void Update(float deltaTime) {
+        moveTimer += deltaTime;
+        if (moveTimer >= moveDelay) {
+            patrolIndex = (patrolIndex + 1) % patrolPath.size();
+            position = patrolPath[patrolIndex];
+            moveTimer = 0.0f; // Reset timer
+        }
+    }
+};
+
 // food class
 class Food {
 public:
@@ -117,18 +145,9 @@ public:
     Texture2D texture;
 
     // Food image
-    Food(const vector<vector<int>>& maze)
+    Food(Texture2D& texture, const vector<vector<int>>& maze) : texture(texture)
     {
-        Image image = LoadImage("pics/tile.png");
-        texture = LoadTextureFromImage(image);
-        UnloadImage(image);
         position = GenerateRandomPos(maze);
-    }
-
-    // Destructor 
-    ~Food() 
-    {
-        UnloadTexture(texture);
     }
 
     void Draw(Vector2 offset) {
@@ -152,45 +171,53 @@ int main() {
     srand(time(nullptr));
     InitWindow(screenWidth, screenHeight, "Menu and Game Screen");
 
+    // Load resources
+    Texture2D playerTexture = LoadTexture("pics/player1.png");
+    Texture2D foodTexture = LoadTexture("pics/tile.png");
+    Texture2D enemyTexture = LoadTexture("pics/enemy.png");
+
    // Colors
     Color bgColor = DARKGRAY;
     Color borderColor = WHITE;
-
-    Vector2 offset = {
-        (screenWidth - mazeWidth * gridSize) / 2.0f,
-        (screenHeight - mazeHeight * gridSize) / 2.0f
-    };
-
-    
 
     // Game state
     GameState currentState = MENU;  // Start with the menu state
     bool gameRunning = true;        // Control the main loop
     bool isPaused = false;
 
-    // Score and timer
+    // Score, timer & level
     int score = 0;
     float timer = 60.0f;  // 60 seconds countdown
+    int level = 1;
+    float timeSinceLastHit = 0.0f; // Timer for score reduction
+    float scoreReductionDelay = 1.0f; // Delay in seconds between score reductions
+    int nextLevelScore = 100; // Score required for Level 2
+    float levelTimeReduction = 5.0f; // Time reduction per level
     
-    // Food & Player object
+    // Initialize maze, player, food, and enemies
     vector<vector<int>> maze = GenerateMaze();
-    Food food(maze);
-    Player player;
-    //food.Spawn(maze);
+    Food food(foodTexture, maze);
+    Player player(playerTexture);
+    vector<Enemy> enemies;
     
-    
+    // Create enemies with specific patrol paths
+    enemies.push_back(Enemy(enemyTexture, { {3, 3}, {5, 3}, {5, 5}, {3, 5} }));
+    enemies.push_back(Enemy(enemyTexture, { {7, 7}, {7, 9}, {9, 9}, {9, 7} }));
+
+    Vector2 offset = {
+        (screenWidth - mazeWidth * gridSize) / 2.0f,
+        (screenHeight - mazeHeight * gridSize) / 2.0f
+    };
 
     while (!WindowShouldClose() && gameRunning) {
 
-        cout << "Player Position: (" << player.position.x << ", " << player.position.y << ")\n";
-        cout << "Food Position: (" << food.position.x << ", " << food.position.y << ")\n";
+        float deltaTime = GetFrameTime();
+        timeSinceLastHit += deltaTime;
 
         // Update game timer
         if (currentState == GAME && !isPaused && timer > 0) {
-            timer -= GetFrameTime();
-            if (timer <= 0) {
-                timer = 0;               
-            }
+            timer -= deltaTime;
+            if (timer <= 0) timer = 0;     
         }
 
         BeginDrawing();
@@ -220,11 +247,16 @@ int main() {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 if (mouseOverStart) {
                     currentState = GAME;  // Transition to the game screen
-                    timer = 60.0f;  // Reset timer
+                    timer = 60.0f - (level - 1) * 5; // Reduce time as levels progress
                     score = 0;      // Reset score
                     player.position = { 1, 1 };  // Reset player position
                     maze = GenerateMaze();
                     food.position = food.GenerateRandomPos(maze);
+                    for (auto& enemy : enemies) {
+                        enemy.moveDelay = max(0.2f, 0.5f - level * 0.05f); // Decrease delay per level
+                        enemy.patrolIndex = 0;
+                        enemy.position = enemy.patrolPath[0];
+                    }
                     
                 }
                 if (mouseOverQuit) {
@@ -237,22 +269,50 @@ int main() {
             // Game Screen
             ClearBackground(BLACK);
             
-                if ( !isPaused && timer > 0) {
-                    timer -= GetFrameTime();
-                    // Handle player movement
-                    if (IsKeyPressed(KEY_UP)) player.Move({ 0, -1 }, maze);
-                    if (IsKeyPressed(KEY_DOWN)) player.Move({ 0, 1 }, maze);
-                    if (IsKeyPressed(KEY_LEFT)) player.Move({ -1, 0 }, maze);
-                    if (IsKeyPressed(KEY_RIGHT)) player.Move({ 1, 0 }, maze);
+            if (currentState == GAME && !isPaused && timer > 0) {
 
+                // Handle player movement
+                if (IsKeyPressed(KEY_UP)) player.Move({ 0, -1 }, maze);
+                if (IsKeyPressed(KEY_DOWN)) player.Move({ 0, 1 }, maze);
+                if (IsKeyPressed(KEY_LEFT)) player.Move({ -1, 0 }, maze);
+                if (IsKeyPressed(KEY_RIGHT)) player.Move({ 1, 0 }, maze);
 
+                // Enemy movement
+                for (auto& enemy : enemies) {
+                    enemy.Update(deltaTime);
+                }
+            }
 
                     // Collision detection between player and food
                     if (player.position.x == food.position.x && player.position.y == food.position.y) {
                         food.position = food.GenerateRandomPos(maze); // Respawn food
-                        score++;
+                        score += 10; // add points to the Score
                     }
-                }
+                        // Progress to next level
+                    if (score >= nextLevelScore) {
+                        level++;
+                        timer = max(10.0f, 60.0f - level * levelTimeReduction); // Adjust timer
+                        nextLevelScore += 150; // Increment score threshold for the next level
+                        timer = 60.0f - (level - 1) * 5;
+                        maze = GenerateMaze();
+                        player.position = { 1, 1 };
+                        food.position = food.GenerateRandomPos(maze);
+                        for (auto& enemy : enemies) {
+                            enemy.patrolIndex = 0;
+                            enemy.position = enemy.patrolPath[0];
+                        }
+                    }
+
+                    // Collision with enemies
+                    for (const auto& enemy : enemies) {
+                        if (player.position.x == enemy.position.x && player.position.y == enemy.position.y) {
+                            if (timeSinceLastHit >= scoreReductionDelay) {
+                                score = max(0, score - 1); // Gradual score reduction
+                                timeSinceLastHit = 0.0f; // Reset the cooldown timer
+                            }
+                        }
+                    }
+                
             
 
             // Draw maze
@@ -268,14 +328,19 @@ int main() {
             //DrawRectangleLines(50, 50, screenWidth - 100, screenHeight - 100, borderColor);
             
             // Draw Food & player
-            if (timer > 0) {
-                food.Draw(offset);
-                player.Draw(offset);
+            
+            food.Draw(offset);
+            player.Draw(offset);
+            for (const auto& enemy : enemies) {
+                enemy.Draw(offset);
             }
+            
 
             // Display Score and Timer
             DrawText(TextFormat("Score: %d", score), 10, 10, 20, WHITE);
             DrawText(TextFormat("Time Left: %.1f", timer), screenWidth - 150, 10, 20, WHITE);
+            DrawText(TextFormat("Level: %d", level), 10, 70, 20, WHITE);
+
 
             // Draw a Pause-Btn
             Rectangle pauseButton = { screenWidth - 150, 50, 120, 40 };
