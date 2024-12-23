@@ -4,6 +4,8 @@
 #include <stack>
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
+#include <string>
 using namespace std;
 
 // Custom struct for integer-based 2D vector 
@@ -76,6 +78,45 @@ vector<vector<int>> GenerateMaze() {
     }
 
     return maze;
+}
+
+// Game Data Definition
+struct GameData {
+    int currentLevel;
+    int score;
+    Vector2 playerPosition;
+};
+
+// Save Game Function
+void SaveGame(const GameData& data, const std::string& filename = "savegame.txt") {
+    std::ofstream file(filename);
+    if (file.is_open()) {
+        file << data.currentLevel << '\n';
+        file << data.score << '\n';
+        file << data.playerPosition.x << ' ' << data.playerPosition.y << '\n';
+        file.close();
+        std::cout << "Game saved successfully!\n";
+    }
+    else {
+        std::cerr << "Failed to open file for saving.\n";
+    }
+}
+
+// Load Game Function
+GameData LoadGame(const std::string& filename = "savegame.txt") {
+    std::ifstream file(filename);
+    GameData data = { 0, 0, {0.0f, 0.0f} }; // Default data
+    if (file.is_open()) {
+        file >> data.currentLevel;
+        file >> data.score;
+        file >> data.playerPosition.x >> data.playerPosition.y;
+        file.close();
+        std::cout << "Game loaded successfully!\n";
+    }
+    else {
+        std::cerr << "No save file found. Starting a new game.\n";
+    }
+    return data;
 }
 
 // player Character
@@ -185,8 +226,16 @@ int main() {
     bool gameRunning = true;        // Control the main loop
     bool isPaused = false;
 
+    // Game variables
+    GameData data = LoadGame(); // Load game data if save file exists
+
+    int currentLevel = data.currentLevel;
+    int score = data.score;
+    Vector2 playerPosition = data.playerPosition;
+    const float playerSpeed = 200.0f;
+
     // Score, timer & level
-    int score = 0;
+    //int score = 0;
     float timer = 60.0f;  // 60 seconds countdown
     int level = 1;
     float timeSinceLastHit = 0.0f; // Timer for score reduction
@@ -272,10 +321,10 @@ int main() {
             if (currentState == GAME && !isPaused && timer > 0) {
 
                 // Handle player movement
-                if (IsKeyPressed(KEY_UP)) player.Move({ 0, -1 }, maze);
-                if (IsKeyPressed(KEY_DOWN)) player.Move({ 0, 1 }, maze);
-                if (IsKeyPressed(KEY_LEFT)) player.Move({ -1, 0 }, maze);
-                if (IsKeyPressed(KEY_RIGHT)) player.Move({ 1, 0 }, maze);
+                if (IsKeyPressed(KEY_W)) player.Move({ 0, -1 }, maze);
+                if (IsKeyPressed(KEY_S)) player.Move({ 0, 1 }, maze);
+                if (IsKeyPressed(KEY_A)) player.Move({ -1, 0 }, maze);
+                if (IsKeyPressed(KEY_D)) player.Move({ 1, 0 }, maze);
 
                 // Enemy movement
                 for (auto& enemy : enemies) {
@@ -360,6 +409,22 @@ int main() {
                 DrawText("Paused", screenWidth / 2 - MeasureText("Paused", 40) / 2, screenHeight / 2 - 20, 40, WHITE);
             }
 
+            // Save Progress
+            if (IsKeyPressed(KEY_U)) {
+                GameData saveData = { currentLevel, score, playerPosition };
+                SaveGame(saveData);
+            }
+
+            // Load Progress
+            if (IsKeyPressed(KEY_L)) {
+                data = LoadGame();
+                currentLevel = data.currentLevel;
+                score = data.score;
+                playerPosition = data.playerPosition;
+            }
+
+            DrawText("Press 'U' to save progress.", 10, 500, 20, DARKGRAY);
+            DrawText("Press 'L' to load progress.", 650, 500, 20, DARKGRAY);
 
             // Show "GAME OVER" text if the timer reaches 0
             if (timer <= 0) {
