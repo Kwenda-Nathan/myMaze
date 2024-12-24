@@ -119,6 +119,25 @@ GameData LoadGame(const std::string& filename = "savegame.txt") {
     return data;
 }
 
+// Game highscore
+void SaveHighScore(int highScore) {
+    std::ofstream file("highscore.txt");
+    if (file.is_open()) {
+        file << highScore;
+        file.close();
+    }
+}
+
+int LoadHighScore() {
+    std::ifstream file("highscore.txt");
+    int highScore = 0;
+    if (file.is_open()) {
+        file >> highScore;
+        file.close();
+    }
+    return highScore;
+}
+
 // player Character
 class Player 
 {
@@ -207,10 +226,30 @@ public:
     }
 };
 
+// Sounds
+Sound Foodsound;
+Sound GOsound;
+Sound Nextlevel;
+Sound powerupsd;
+Music backgsound;
+
+void InitSounds() {
+    InitAudioDevice();
+
+    Foodsound = LoadSound("sounds/foodsound.wav");
+    GOsound = LoadSound("sounds/gosound.wav");
+    Nextlevel = LoadSound("sounds/nextlevel.wav");
+    powerupsd = LoadSound("sounds/powerUpsound.wav");
+
+    backgsound= LoadMusicStream("sounds/backgroundsound.mp3");
+    PlayMusicStream(backgsound);
+}
+
 int main() {
     // Initialize the window
     srand(time(nullptr));
     InitWindow(screenWidth, screenHeight, "Menu and Game Screen");
+    InitSounds();
 
     // Load resources
     Texture2D playerTexture = LoadTexture("pics/player1.png");
@@ -242,6 +281,9 @@ int main() {
     float scoreReductionDelay = 1.0f; // Delay in seconds between score reductions
     int nextLevelScore = 100; // Score required for Level 2
     float levelTimeReduction = 5.0f; // Time reduction per level
+    int highScore = LoadHighScore();
+    float volume = 0.5f; // Initial volume (50%)
+    SetMasterVolume(volume); // Set initial volume
     
     // Initialize maze, player, food, and enemies
     vector<vector<int>> maze = GenerateMaze();
@@ -262,6 +304,7 @@ int main() {
 
         float deltaTime = GetFrameTime();
         timeSinceLastHit += deltaTime;
+        UpdateMusicStream(backgsound);
 
         // Update game timer
         if (currentState == GAME && !isPaused && timer > 0) {
@@ -278,14 +321,20 @@ int main() {
             DrawText("GAME MENU", screenWidth / 2 - MeasureText("GAME MENU", 40) / 2, 100, 40, WHITE);
 
             // Draw Start Button
-            Rectangle startButton = { screenWidth / 2 - 100, screenHeight / 2 - 60, 200, 50 };
+            Rectangle startButton = { screenWidth / 2 - 100, screenHeight / 2 - 120, 200, 50 };
             Vector2 mousePosition = GetMousePosition();
             bool mouseOverStart = CheckCollisionPointRec(mousePosition, startButton);
             DrawRectangleRec(startButton, mouseOverStart ? LIGHTGRAY : GRAY);
             DrawText("START", startButton.x + 50, startButton.y + 10, 30, BLACK);
 
+            // Load Button
+            Rectangle loadButton = { screenWidth / 2 - 100, screenHeight / 2 - 40, 200, 50 };
+            bool mouseOverLoad = CheckCollisionPointRec(mousePosition, loadButton);
+            DrawRectangleRec(loadButton, mouseOverLoad ? LIGHTGRAY : GRAY);
+            DrawText("LOAD", loadButton.x + 50, loadButton.y + 10, 30, BLACK);
+
             // Draw Quit Button
-            Rectangle quitButton = { screenWidth / 2 - 100, screenHeight / 2 + 20, 200, 50 };
+            Rectangle quitButton = { screenWidth / 2 - 100, screenHeight / 2 + 40, 200, 50 };
             bool mouseOverQuit = CheckCollisionPointRec(mousePosition, quitButton);
             DrawRectangleRec(quitButton, mouseOverQuit ? LIGHTGRAY : GRAY);
             DrawText("QUIT", quitButton.x + 60, quitButton.y + 10, 30, BLACK);
@@ -311,7 +360,38 @@ int main() {
                 if (mouseOverQuit) {
                     gameRunning = false;  // Exit the game
                 }
+                // Load Progress
+                if (mouseOverLoad ) {
+                    currentState = GAME;
+                    data = LoadGame();
+                    currentLevel = data.currentLevel;
+                    score = data.score;
+                    playerPosition = data.playerPosition;
+                }
             }
+
+            // Draw Volume Slider
+            Rectangle volumeSlider = { screenWidth / 2 - 100, quitButton.y + quitButton.height + 30, 200, 20 };
+            DrawRectangleRec(volumeSlider, LIGHTGRAY);
+
+            // Slider knob position based on volume
+            float knobX = volumeSlider.x + (volume * volumeSlider.width);
+            DrawCircle(knobX, volumeSlider.y + volumeSlider.height / 2, 10, DARKGRAY);
+
+            // Handle volume adjustment
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+                if (CheckCollisionPointRec(mousePosition, volumeSlider)) {
+                    volume = (mousePosition.x - volumeSlider.x) / volumeSlider.width;
+                    if (volume < 0.0f) volume = 0.0f;
+                    if (volume > 1.0f) volume = 1.0f;
+
+                    SetMasterVolume(volume); // Adjust the game's volume
+                }
+            }
+
+            // Display volume percentage
+            DrawText(TextFormat("Volume: %d%%", (int)(volume * 100)), volumeSlider.x + 50, volumeSlider.y + 30, 20, BLACK);
+
         }
         else if (currentState == GAME) {
             
@@ -336,6 +416,7 @@ int main() {
                     if (player.position.x == food.position.x && player.position.y == food.position.y) {
                         food.position = food.GenerateRandomPos(maze); // Respawn food
                         score += 10; // add points to the Score
+                        PlaySound(Foodsound);
                     }
                         // Progress to next level
                     if (score >= nextLevelScore) {
@@ -346,6 +427,7 @@ int main() {
                         maze = GenerateMaze();
                         player.position = { 1, 1 };
                         food.position = food.GenerateRandomPos(maze);
+                        PlaySound(Nextlevel);
                         for (auto& enemy : enemies) {
                             enemy.patrolIndex = 0;
                             enemy.position = enemy.patrolPath[0];
@@ -415,20 +497,20 @@ int main() {
                 SaveGame(saveData);
             }
 
-            // Load Progress
-            if (IsKeyPressed(KEY_L)) {
-                data = LoadGame();
-                currentLevel = data.currentLevel;
-                score = data.score;
-                playerPosition = data.playerPosition;
+            // Update high score
+            if (score > highScore) {
+                highScore = score;
+                SaveHighScore(highScore); // Save the new high score to the file
             }
 
             DrawText("Press 'U' to save progress.", 10, 500, 20, DARKGRAY);
             DrawText("Press 'L' to load progress.", 650, 500, 20, DARKGRAY);
+            DrawText(TextFormat("High Score: %d", highScore), 350, 10, 20, DARKGRAY);
 
             // Show "GAME OVER" text if the timer reaches 0
             if (timer <= 0) {
                 DrawText("GAME OVER!", screenWidth / 2 - MeasureText("GAME OVER!", 40) / 2, screenHeight / 2 - 100, 40, RED);
+                PlaySound(GOsound);
 
                 // Display M to return to the menu text
                 DrawText("Press M to return to the menu",
@@ -450,6 +532,7 @@ int main() {
                     score = 0;            // Reset score
                     player.position = { 1, 1 };  // Reset player position
                     food.position = food.GenerateRandomPos(maze); // Reset food position
+                    level = 1;
                 }
             }
 
@@ -464,7 +547,12 @@ int main() {
 
         EndDrawing();
     }
-
+    UnloadSound(powerupsd);
+    UnloadSound(Nextlevel);
+    UnloadSound(Foodsound);
+    UnloadSound(GOsound);
+    UnloadMusicStream(backgsound);
+    CloseAudioDevice();
     // Close the window and clean up
     CloseWindow();
 
