@@ -226,6 +226,51 @@ public:
     }
 };
 
+// PowerUp class
+class PowerUp {
+public:
+    Vector2i position;  // Grid position
+    Texture2D texture;  // Texture for the power-up
+    bool active;        // Whether the power-up is currently active
+    float timer;        // Timer for disappearance
+
+    PowerUp(Texture2D& texture, const vector<vector<int>>& maze)
+        : texture(texture), active(false), timer(0.0f) {
+        position = GenerateRandomPos(maze);
+    }
+
+    void Activate(const vector<vector<int>>& maze, float duration) {
+        position = GenerateRandomPos(maze);  // Place at a random valid position
+        active = true;
+        timer = duration;  // Set the active duration
+    }
+
+    void Update(float deltaTime) {
+        if (active) {
+            timer -= deltaTime;
+            if (timer <= 0.0f) {
+                active = false;  // Deactivate when timer runs out
+            }
+        }
+    }
+
+    void Draw(Vector2 offset) {
+        if (active) {
+            DrawTexture(texture, offset.x + position.x * gridSize, offset.y + position.y * gridSize, WHITE);
+        }
+    }
+
+private:
+    Vector2i GenerateRandomPos(const vector<vector<int>>& maze) {
+        Vector2i newPos;
+        do {
+            newPos = { GetRandomValue(0, maze[0].size() - 1), GetRandomValue(0, maze.size() - 1) };
+        } while (maze[newPos.y][newPos.x] != 0);  // Ensure it's on a valid path
+        return newPos;
+    }
+};
+
+
 // Sounds
 Sound Foodsound;
 Sound GOsound;
@@ -255,6 +300,8 @@ int main() {
     Texture2D playerTexture = LoadTexture("pics/player1.png");
     Texture2D foodTexture = LoadTexture("pics/tile.png");
     Texture2D enemyTexture = LoadTexture("pics/enemy.png");
+    Texture2D scorePowerUpTexture = LoadTexture("pics/powerup1.png");
+    Texture2D freezePowerUpTexture = LoadTexture("pics/powerup2.png");
 
    // Colors
     Color bgColor = DARKGRAY;
@@ -284,12 +331,26 @@ int main() {
     int highScore = LoadHighScore();
     float volume = 0.5f; // Initial volume (50%)
     SetMasterVolume(volume); // Set initial volume
+    int scoreMultiplier = 1;
+    float scorePowerUpSpawnInterval = 20.0f;
+    float freezePowerUpSpawnInterval = 25.0f;
+    float freezeTimer = 0.0f;
+    bool isFrozen = false;
+    float playerRadius = 16.0f;
+    float gameTimer = 60.0f;
+    bool scorePowerUpSpawnedAt40 = false;
+    bool scorePowerUpSpawnedAt20 = false;
+    bool freezePowerUpSpawnedAt35 = false;
+    bool freezePowerUpSpawnedAt10 = false;
+
     
     // Initialize maze, player, food, and enemies
     vector<vector<int>> maze = GenerateMaze();
     Food food(foodTexture, maze);
     Player player(playerTexture);
     vector<Enemy> enemies;
+    PowerUp scorePowerUp(scorePowerUpTexture, maze);
+    PowerUp freezePowerUp(freezePowerUpTexture, maze);
     
     // Create enemies with specific patrol paths
     enemies.push_back(Enemy(enemyTexture, { {3, 3}, {5, 3}, {5, 5}, {3, 5} }));
@@ -394,6 +455,8 @@ int main() {
 
         }
         else if (currentState == GAME) {
+            deltaTime = GetFrameTime();
+            gameTimer += deltaTime;
             
             // Game Screen
             ClearBackground(BLACK);
@@ -411,6 +474,34 @@ int main() {
                     enemy.Update(deltaTime);
                 }
             }
+
+            // Spawn power-ups
+            if (!scorePowerUp.active) {
+                if (!scorePowerUpSpawnedAt40 && timer <= 40) {
+                    scorePowerUp.Activate(maze, 5.0f);  // Appear for 5 seconds
+                    scorePowerUpSpawnedAt40 = true;
+                }
+                else if (!scorePowerUpSpawnedAt20 && timer <= 20) {
+                    scorePowerUp.Activate(maze, 5.0f);  // Appear for 5 seconds
+                    scorePowerUpSpawnedAt20 = true;
+                }
+            }
+
+            if (!freezePowerUp.active) {
+                if (!freezePowerUpSpawnedAt35 && timer <= 35) {
+                    freezePowerUp.Activate(maze, 3.0f);  // Appear for 3 seconds
+                    freezePowerUpSpawnedAt35 = true;
+                }
+                else if (!freezePowerUpSpawnedAt10 && timer <= 10) {
+                    freezePowerUp.Activate(maze, 3.0f);  // Appear for 3 seconds
+                    freezePowerUpSpawnedAt10 = true;
+                }
+            }
+
+            // Update power-ups
+            scorePowerUp.Update(deltaTime);
+            freezePowerUp.Update(deltaTime);
+
 
                     // Collision detection between player and food
                     if (player.position.x == food.position.x && player.position.y == food.position.y) {
@@ -444,7 +535,19 @@ int main() {
                         }
                     }
                 
-            
+                    // Check collisions with power-ups
+                    if (player.position.x == scorePowerUp.position.x && player.position.y == scorePowerUp.position.y) {
+                        score += 5 ; // Add points
+                       // scoreMultiplier *= 2;         // Increase score multiplier
+                        scorePowerUp.active = false;  // Deactivate power-up
+                    }
+
+                    if (player.position.x == freezePowerUp.position.x && player.position.y == freezePowerUp.position.y) {
+                        isFrozen = true;             // Activate freeze effect
+                        freezeTimer = 5.0f;          // Set freeze duration
+                        freezePowerUp.active = false; // Deactivate power-up
+                    }
+
 
             // Draw maze
             for (int y = 0; y < maze.size(); y++) {
@@ -466,6 +569,9 @@ int main() {
                 enemy.Draw(offset);
             }
             
+            // Draw power-ups
+            scorePowerUp.Draw(offset);
+            freezePowerUp.Draw(offset);
 
             // Display Score and Timer
             DrawText(TextFormat("Score: %d", score), 10, 10, 20, WHITE);
@@ -551,6 +657,8 @@ int main() {
     UnloadSound(Nextlevel);
     UnloadSound(Foodsound);
     UnloadSound(GOsound);
+    UnloadTexture(scorePowerUpTexture);
+    UnloadTexture(freezePowerUpTexture);
     UnloadMusicStream(backgsound);
     CloseAudioDevice();
     // Close the window and clean up
