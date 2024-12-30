@@ -1,32 +1,44 @@
 ﻿  maze1.1.cpp
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(41,16): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(214,73): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(214,39): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(223,57): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(223,93): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(259,77): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(259,43): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(267,57): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(267,93): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(295,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(389,65): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(389,45): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(395,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(395,43): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(401,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(401,43): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(440,46): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(440,24): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(454,107): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(454,86): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(556,73): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(556,48): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(557,78): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(557,53): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(588,85): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(588,65): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(632,72): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(632,51): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(45,16): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(276,77): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(276,43): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(299,73): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(299,39): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(308,57): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(308,93): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(414,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(496,65): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(496,45): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(502,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(502,43): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(508,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(508,43): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(521,76): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(521,112): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(548,46): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(548,24): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(562,107): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(562,86): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(624,76): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(624,112): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(640,76): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(640,112): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(655,84): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(655,120): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(682,73): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(682,48): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(714,85): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(714,65): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(758,72): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(758,51): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(770,76): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(770,112): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(786,84): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(786,120): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(803,84): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(803,120): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(818,92): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Mr23\Documents\GitHub\myMaze\myMaze\maze1.1.cpp(818,128): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   myMaze.vcxproj -> C:\Users\Mr23\Documents\GitHub\myMaze\x64\Debug\myMaze.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.
