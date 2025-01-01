@@ -1,15 +1,12 @@
 #include <iostream>
-#include <raylib.h>
+#include <raylib.h> //https://www.raylib.com
 #include <vector>
 #include <stack>
-#include <cstdlib>
-#include <ctime>
 #include <fstream>
 #include <string>
 #include <algorithm> // Required for std::max
-#include <map>
-#include <cmath>
-#include <queue>
+#include <utility> // For std::pair
+
 using namespace std;
 
 // Custom struct for integer-based 2D vector 
@@ -39,6 +36,7 @@ const vector<Vector2i> directions = {
     {0, 1},  // Down
     {-1, 0}  // Left
 };
+
 
 // Function to shuffle directions randomly
 void ShuffleDirections(vector<Vector2i>& dirs) {
@@ -144,34 +142,32 @@ int LoadHighScore() {
 }
 
 // player Character
-class Player
-{
+class Player {
 public:
     Texture2D image;
-    Vector2i position;
+    Vector2 position; // Use Vector2 for position
 
     Player(Texture2D& texture) {
         image = texture;
-        position = { 1,1 };  // Starting position (aligned with the grid)
-
+        position = { 1.0f, 1.0f };  // Starting position (aligned with the grid)
     }
 
     void Draw(Vector2 offset) {
         DrawTextureV(image, { offset.x + position.x * gridSize, offset.y + position.y * gridSize }, WHITE);
     }
-    void Move(Vector2i direction, const vector<vector<int>>& maze) {
-        Vector2i nextPosition = { position.x + direction.x, position.y + direction.y };
+
+    void Move(Vector2 direction, const vector<vector<int>>& maze) {
+        Vector2 nextPosition = { position.x + direction.x, position.y + direction.y };
 
         // Check if the next position is a valid path (not a wall)
         if (nextPosition.x >= 0 && nextPosition.x < maze[0].size() &&
             nextPosition.y >= 0 && nextPosition.y < maze.size() &&
-            maze[nextPosition.y][nextPosition.x] == 0) {
+            maze[static_cast<int>(nextPosition.y)][static_cast<int>(nextPosition.x)] == 0) {
             position = nextPosition;
         }
     }
-
-
 };
+
 
 // Enemy class
 class Enemy {
@@ -202,85 +198,6 @@ public:
         }
     }
 };
-
-
-// super enemy this one follows the enemy for a given period of time 
-class SuperEnemy {
-public:
-    Vector2i position;      // Grid position
-    Vector2 floatPosition;  // Precise position for smooth movement
-    Texture2D texture;      // Texture for the super enemy
-    float speed;            // Movement speed
-    float activeTime;       // Time for which the super enemy is active
-    bool isActive;          // Whether the super enemy is active
-
-    SuperEnemy(Texture2D& texture, float speed, float activeTime)
-        : texture(texture), speed(speed), activeTime(activeTime), isActive(false) {
-        position = { -1, -1 }; // Initially off-grid
-        floatPosition = { -1.0f, -1.0f };
-    }
-
-    void Activate(const Vector2i& startPosition) {
-        position = startPosition;
-        floatPosition = { static_cast<float>(startPosition.x), static_cast<float>(startPosition.y) };
-        isActive = true;
-        activeTime = 30.0f; // Reset active time
-    }
-
-    void Deactivate() {
-        position = { -1, -1 }; // Move off-grid
-        floatPosition = { -1.0f, -1.0f };
-        isActive = false;
-    }
-
-    void MoveTowards(const Vector2i& target, float deltaTime, const std::vector<std::vector<int>>& maze) {
-        if (!isActive) return;
-
-        // Calculate direction vector towards the target
-        Vector2 direction = {
-            static_cast<float>(target.x) - floatPosition.x,
-            static_cast<float>(target.y) - floatPosition.y
-        };
-
-        // Normalize the direction vector
-        float magnitude = sqrt(direction.x * direction.x + direction.y * direction.y);
-        if (magnitude > 0) {
-            direction.x /= magnitude;
-            direction.y /= magnitude;
-        }
-
-        // Update float position
-        floatPosition.x += direction.x * speed * deltaTime;
-        floatPosition.y += direction.y * speed * deltaTime;
-
-        // Cast to grid position for collision checks
-        int gridX = static_cast<int>(floatPosition.x);
-        int gridY = static_cast<int>(floatPosition.y);
-
-        // Ensure the new position is within bounds and not colliding with walls
-        if (gridX >= 0 && gridX < maze[0].size() &&
-            gridY >= 0 && gridY < maze.size() &&
-            maze[gridY][gridX] != 1) { // 1 indicates a wall
-            position.x = gridX;
-            position.y = gridY;
-        }
-        else {
-            // Revert to last valid float position if collision occurs
-            floatPosition = { static_cast<float>(position.x), static_cast<float>(position.y) };
-        }
-    }
-
-    void Draw(const Vector2& offset) {
-        if (isActive) {
-            // Draw the super enemy texture
-            DrawTexture(texture, offset.x + position.x * gridSize, offset.y + position.y * gridSize, WHITE);
-
-
-        }
-    }
-};
-
-
 
 
 // food class
@@ -408,6 +325,43 @@ bool SolvePuzzle(int& remainingAttempts) {
     return solved;
 }
 
+// Exit Struct
+class Exit {
+public:
+    Vector2 position; // Grid position (floating-point for flexibility)
+    bool active;
+
+    Exit() : position({ -1.0f, -1.0f }), active(false) {}
+
+    void Activate(const vector<vector<int>>& maze) {
+        position = GenerateRandomPos(maze);
+        active = true;
+    }
+
+    void Deactivate() {
+        position = { -1.0f, -1.0f }; // Move to an invalid position
+        active = false;
+    }
+
+    void Draw(Vector2 offset) {
+        if (active) {
+            DrawRectangleV({ offset.x + position.x * gridSize, offset.y + position.y * gridSize },
+                { gridSize, gridSize }, GREEN);
+        }
+    }
+
+private:
+    Vector2 GenerateRandomPos(const vector<vector<int>>& maze) {
+        Vector2 newPos;
+        do {
+            newPos = { static_cast<float>(GetRandomValue(0, maze[0].size() - 1)),
+                       static_cast<float>(GetRandomValue(0, maze.size() - 1)) };
+        } while (maze[static_cast<int>(newPos.y)][static_cast<int>(newPos.x)] != 0); // Ensure it's on a valid path
+        return newPos;
+    }
+};
+
+
 
 int main() {
     // Initialize the window
@@ -419,9 +373,8 @@ int main() {
     Texture2D playerTexture = LoadTexture("pics/player1.png");
     Texture2D foodTexture = LoadTexture("pics/tile.png");
     Texture2D enemyTexture = LoadTexture("pics/enemy.png");
-    Texture2D superEnemyTexture = LoadTexture("pics/super_enemy.png");
-    SuperEnemy superEnemy(superEnemyTexture, 2.5f, 5.0f); // Speed = 2.5, active for 5 seconds
-
+    
+    
 
     // Colors
     Color bgColor = DARKGRAY;
@@ -439,7 +392,7 @@ int main() {
     int score = data.score;
     Vector2 playerPosition = data.playerPosition;
     const float playerSpeed = 200.0f;
-
+   
     // Score, timer & level
     //int score = 0;
     float timer = 60.0f;  // 60 seconds countdown
@@ -452,12 +405,14 @@ int main() {
     float volume = 0.5f; // Initial volume (50%)
     SetMasterVolume(volume); // Set initial volume
     int attempts = 3; // Maximum attempts for solving the puzzle
-
+  
     // Initialize maze, player, food, and enemies
     vector<vector<int>> maze = GenerateMaze();
     Food food(foodTexture, maze);
     Player player(playerTexture);
     vector<Enemy> enemies;
+    
+    Exit exit; // Declare exit object
 
     // Create enemies with specific patrol paths
     enemies.push_back(Enemy(enemyTexture, { {3, 3}, {5, 3}, {5, 5}, {3, 5} }));
@@ -518,7 +473,8 @@ int main() {
                     player.position = { 1, 1 };  // Reset player position
                     maze = GenerateMaze();
                     food.position = food.GenerateRandomPos(maze);
-                    superEnemy.Activate({ GetRandomValue(1, maze[0].size() - 2), GetRandomValue(1, maze.size() - 2) }); // load the super enemy
+                    
+                    // load the super enemy
                     for (auto& enemy : enemies) {
                         enemy.moveDelay = max(0.2f, 0.5f - level * 0.05f); // Decrease delay per level
                         enemy.patrolIndex = 0;
@@ -579,30 +535,9 @@ int main() {
                 for (auto& enemy : enemies) {
                     enemy.Update(deltaTime);
                 }
-                // super enemy movement 
-                if (superEnemy.isActive) {
-                    superEnemy.activeTime -= deltaTime;
-
-                    // Update movement
-                    superEnemy.MoveTowards(player.position, deltaTime, maze);
-
-                    // Deactivate after the timer expires
-                    if (superEnemy.activeTime <= 0) {
-                        superEnemy.Deactivate();
-                    }
-                }
-
+               
             }
 
-            
-
-            // collision detection between player and super enemy
-            if (superEnemy.isActive &&
-                player.position.x == superEnemy.position.x &&
-                player.position.y == superEnemy.position.y) {
-                score = max(0, score - 5); // Reduce score by 5
-                superEnemy.Deactivate();  // Deactivate after collision
-            }
 
             // Collision detection between player and food
             if (player.position.x == food.position.x && player.position.y == food.position.y) {
@@ -610,8 +545,13 @@ int main() {
                 score += 50; // add points to the Score
                 PlaySound(Foodsound);
             }
+
+            if (score >= nextLevelScore && !exit.active) {
+                exit.Activate(maze); // Activate exit when score threshold is reached
+            }
+
             // Progress to next level
-            if (score >= nextLevelScore) {
+            if (exit.active && player.position.x == static_cast<int>(exit.position.x) && player.position.y == static_cast<int>(exit.position.y)) {
                 if (SolvePuzzle(attempts)) {
                     level++;
                     timer = max(10.0f, 60.0f - level * levelTimeReduction); // Adjust timer
@@ -621,12 +561,13 @@ int main() {
                     player.position = { 1, 1 };
                     attempts = 3; // Reset attempts for the next puzzle
                     food.position = food.GenerateRandomPos(maze);
-                    superEnemy.Activate({ GetRandomValue(1, maze[0].size() - 2), GetRandomValue(1, maze.size() - 2) }); // load the super enemy
+                    
                     PlaySound(Nextlevel);
                     for (auto& enemy : enemies) {
                         enemy.patrolIndex = 0;
                         enemy.position = enemy.patrolPath[0];
                     }
+                    exit.Deactivate();
                 }
                 else if (attempts == 0) {
                     timer = 60.0f;        // Reset timer
@@ -637,7 +578,7 @@ int main() {
                     attempts = 3;
                     maze = GenerateMaze();          // Generate a new maze
                     food.position = food.GenerateRandomPos(maze); // Reset food position
-                    superEnemy.Activate({ GetRandomValue(1, maze[0].size() - 2), GetRandomValue(1, maze.size() - 2) }); // load the super enemy
+                    
                     for (auto& enemy : enemies) {   // Reset enemy logic
                         enemy.patrolIndex = 0;
                         enemy.position = enemy.patrolPath[0];
@@ -652,7 +593,7 @@ int main() {
                             maze = GenerateMaze();
                             player.position = { 1, 1 };
                             food.position = food.GenerateRandomPos(maze);
-                            superEnemy.Activate({ GetRandomValue(1, maze[0].size() - 2), GetRandomValue(1, maze.size() - 2) }); // load the super enemy
+
                             PlaySound(Nextlevel);
                             for (auto& enemy : enemies) {
                                 enemy.patrolIndex = 0;
@@ -693,11 +634,12 @@ int main() {
 
             food.Draw(offset);
             player.Draw(offset);
-            superEnemy.Draw(offset);
+          
             for (const auto& enemy : enemies) {
                 enemy.Draw(offset);
             }
-
+            exit.Draw(offset);
+           
 
             // Display Score and Timer
             DrawText(TextFormat("Score: %d", score), 10, 10, 20, WHITE);
@@ -767,7 +709,7 @@ int main() {
                     player.position = { 1, 1 };     // Reset player position
                     maze = GenerateMaze();          // Generate a new maze
                     food.position = food.GenerateRandomPos(maze); // Reset food position
-                    superEnemy.Activate({ GetRandomValue(1, maze[0].size() - 2), GetRandomValue(1, maze.size() - 2) }); // load the super enemy
+
                     for (auto& enemy : enemies) {   // Reset enemy logic
                         enemy.patrolIndex = 0;
                         enemy.position = enemy.patrolPath[0];
@@ -783,7 +725,6 @@ int main() {
                             player.position = { 1, 1 };
                             attempts = 3;
                             food.position = food.GenerateRandomPos(maze);
-                            superEnemy.Activate({ GetRandomValue(1, maze[0].size() - 2), GetRandomValue(1, maze.size() - 2) }); // load the super enemy
                             PlaySound(Nextlevel);
                             for (auto& enemy : enemies) {
                                 enemy.patrolIndex = 0;
@@ -800,7 +741,6 @@ int main() {
                             attempts = 3;
                             maze = GenerateMaze();          // Generate a new maze
                             food.position = food.GenerateRandomPos(maze); // Reset food position
-                            superEnemy.Activate({ GetRandomValue(1, maze[0].size() - 2), GetRandomValue(1, maze.size() - 2) }); // load the super enemy
                             for (auto& enemy : enemies) {   // Reset enemy logic
                                 enemy.patrolIndex = 0;
                                 enemy.position = enemy.patrolPath[0];
@@ -815,7 +755,6 @@ int main() {
                                     maze = GenerateMaze();
                                     player.position = { 1, 1 };
                                     food.position = food.GenerateRandomPos(maze);
-                                    superEnemy.Activate({ GetRandomValue(1, maze[0].size() - 2), GetRandomValue(1, maze.size() - 2) }); // load the super enemy
                                     PlaySound(Nextlevel);
                                     for (auto& enemy : enemies) {
                                         enemy.patrolIndex = 0;
@@ -842,8 +781,7 @@ int main() {
     UnloadSound(powerupsd);
     UnloadSound(Nextlevel);
     UnloadSound(Foodsound);
-    UnloadSound(GOsound);
-    UnloadTexture(superEnemyTexture);
+    UnloadSound(GOsound);  
     UnloadMusicStream(backgsound);
     CloseAudioDevice();
     // Close the window and clean up
